@@ -228,6 +228,7 @@ tr:hover td{background:var(--blue-light)}
   <button class="tab" onclick="go('fair')">FAIR</button>
   <button class="tab" onclick="go('cash')">מזומן ובנקים</button>
   <button class="tab" onclick="go('alloc')">הקצאה</button>
+  <button class="tab" onclick="go('savings')">👶 חיסכון לכל ילד</button>
 </div>
 
 <div class="content active" id="tab-overview"><div class="loading"><div class="spinner"></div><span>טוען נתונים...</span></div></div>
@@ -236,11 +237,12 @@ tr:hover td{background:var(--blue-light)}
 <div class="content" id="tab-cash"><div class="loading"><div class="spinner"></div></div></div>
 <div class="content" id="tab-alloc"><div class="loading"><div class="spinner"></div></div></div>
 
+<div class="content" id="tab-savings"><div class="loading"><div class="spinner"></div></div></div>
 <div class="footer" id="footer">מתחבר לנתונים...</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyb9Gnpt-ouciqDpkZLbMjkCWqj2buF4O-KR7qcGGV9ZKef6vvB0kquNP3pnmxuqFod/exec';
+const API = 'https://script.google.com/macros/s/AKfycbywKAJXbiSCYE8VbqN0Oft1myNPHuHffOogw7QNRZbE-9wjxpPPuMe5abiizwvJH2km/exec';
 const C = ['#3B6FE8','#0CAF60','#F5A623','#7C5CFC','#E8394A','#00B8D9','#FB923C','#EC4899','#14B8A6','#6366F1'];
 let charts = {};
 
@@ -292,6 +294,76 @@ function renderAll(d){
   renderFAIR(d);
   renderCash(d);
   renderAlloc(d);
+  renderSavings(d);
+}
+
+
+/* ── SAVINGS ── */
+function renderSavings(d){
+  const kids = d.savings ? d.savings.kids : [];
+  const total = d.savings ? d.savings.total : 0;
+
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-icon" style="background:var(--purple-light)">👶</div>
+      <div class="kpi-label">סה"כ חיסכון</div>
+      <div class="kpi-value">₪${fmt(total)}</div>
+      <div class="kpi-sub">${kids.length} ילדים</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--green-light)">🏛</div>
+      <div class="kpi-label">סה"כ ב"ל</div>
+      <div class="kpi-value">₪${fmt(kids.reduce((s,k)=>s+k.bituachLeumi,0))}</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--blue-light)">👨‍👩‍👧</div>
+      <div class="kpi-label">סה"כ הורים</div>
+      <div class="kpi-value">₪${fmt(kids.reduce((s,k)=>s+k.parents,0))}</div>
+    </div>
+  </div>
+  <div class="sec">פירוט לפי ילד</div>
+  <div class="cash-grid">`;
+
+  if(kids.length===0){
+    h+=`<div style="padding:2rem;color:var(--muted);text-align:center;width:100%">
+      אין נתונים עדיין — עדכן את גיליון "חיסכון לכל ילד" בקובץ האקסל
+    </div>`;
+  }
+
+  kids.forEach(k=>{
+    if(!k.name) return;
+    h+=`<div class="cash-card ils" style="border-right-color:var(--purple)">
+      <div class="cash-inst">👶 ${k.name}</div>
+      <div class="cash-acc">${k.fund||''} ${k.track?'· '+k.track:''}</div>
+      <div class="cash-amt" style="color:var(--purple)">₪${fmt(k.total)}</div>
+      <div class="cash-fx">
+        ב"ל: ₪${fmt(k.bituachLeumi)} | הורים: ₪${fmt(k.parents)}
+        ${k.updatedAt?'<br>עודכן: '+k.updatedAt:''}
+      </div>
+    </div>`;
+  });
+
+  h+=`</div>
+  <div class="sec">פירוט מלא</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>שם הילד</th><th>קופת גמל</th><th>מסלול</th><th>תאריך עדכון</th><th>סה"כ ב"ל</th><th>סה"כ הורים</th><th>סה"כ חיסכון</th><th>% הורים</th></tr></thead>
+    <tbody>`;
+
+  kids.forEach(k=>{
+    if(!k.name) return;
+    const pct_p = k.total>0 ? (k.parents/k.total*100).toFixed(1)+'%' : '-';
+    h+=`<tr>
+      <td><strong>${k.name}</strong></td>
+      <td>${k.fund||'-'}</td>
+      <td><span class="chip chip-purple">${k.track||'-'}</span></td>
+      <td class="mono">${k.updatedAt||'-'}</td>
+      <td class="mono">₪${fmt(k.bituachLeumi)}</td>
+      <td class="mono">₪${fmt(k.parents)}</td>
+      <td class="mono" style="font-weight:700;color:var(--purple)">₪${fmt(k.total)}</td>
+      <td class="mono">${pct_p}</td>
+    </tr>`;
+  });
+
+  h+=`</tbody></table></div>`;
+  document.getElementById('tab-savings').innerHTML=h;
 }
 
 /* ── OVERVIEW ── */
