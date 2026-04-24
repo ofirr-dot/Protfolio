@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תיק השקעות | Ofir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F7FA;
+  --bg2:#FFFFFF;
+  --bg3:#F0F4FF;
+  --card:#FFFFFF;
+  --border:#E4EAF4;
+  --border2:#C8D5F0;
+  --text:#1A2340;
+  --muted:#6B7FA8;
+  --muted2:#94A3C0;
+  --blue:#3B6FE8;
+  --blue2:#2558D4;
+  --blue-light:#EEF3FD;
+  --green:#0CAF60;
+  --green-light:#E6F9F0;
+  --red:#E8394A;
+  --red-light:#FEF0F2;
+  --yellow:#F5A623;
+  --yellow-light:#FFF7E6;
+  --purple:#7C5CFC;
+  --purple-light:#F2EFFE;
+  --cyan:#00B8D9;
+  --shadow:0 1px 3px rgba(59,111,232,0.08),0 4px 16px rgba(59,111,232,0.06);
+  --shadow-sm:0 1px 2px rgba(26,35,64,0.06);
+}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;min-height:100vh;direction:rtl}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* HEADER */
+.header{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 2rem;height:60px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-sm);
+}
+.logo{font-size:1.2rem;font-weight:800;color:var(--text);letter-spacing:-0.3px}
+.logo em{color:var(--blue);font-style:normal}
+.header-right{display:flex;align-items:center;gap:12px}
+.pill{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;
+  padding:4px 10px;border-radius:20px;border:1px solid}
+.pill-green{color:var(--green);background:var(--green-light);border-color:rgba(12,175,96,0.2)}
+.pill-red{color:var(--red);background:var(--red-light);border-color:rgba(232,57,74,0.2)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.clock{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.btn-refresh{
+  display:flex;align-items:center;gap:6px;
+  background:var(--blue);color:#fff;border:none;
+  padding:7px 16px;border-radius:8px;
+  font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all 0.18s;box-shadow:0 2px 8px rgba(59,111,232,0.25);
+}
+.btn-refresh:hover{background:var(--blue2);transform:translateY(-1px)}
+.btn-refresh:active{transform:translateY(0)}
+.btn-refresh.spinning svg{animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TABS */
+.tabs{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 2rem;display:flex;gap:0;overflow-x:auto;
+}
+.tab{
+  padding:14px 20px;border:none;background:none;
+  color:var(--muted);font-family:'Heebo',sans-serif;
+  font-size:14px;font-weight:500;cursor:pointer;
+  white-space:nowrap;border-bottom:2px solid transparent;
+  transition:all 0.18s;margin-bottom:-1px;
+}
+.tab:hover:not(.active){color:var(--text)}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+
+/* CONTENT */
+.content{display:none;padding:2rem;animation:fadeUp 0.2s ease}
+.content.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:1.25rem 1.5rem;
+  box-shadow:var(--shadow-sm);transition:box-shadow 0.2s;
+}
+.kpi:hover{box-shadow:var(--shadow)}
+.kpi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:16px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.kpi-value{font-size:1.6rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);line-height:1.1}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:5px}
+.badge-delta{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:12px;font-weight:600;padding:3px 9px;
+  border-radius:20px;margin-top:8px;
+}
+.up{background:var(--green-light);color:var(--green)}
+.dn{background:var(--red-light);color:var(--red)}
+.pos{color:var(--green);font-weight:600}
+.neg{color:var(--red);font-weight:600}
+
+/* SECTION TITLE */
+.sec{
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:1.5px;
+  display:flex;align-items:center;gap:10px;margin-bottom:1rem;
+}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* CARD */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;
+  box-shadow:var(--shadow-sm);
+}
+.card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-sub{font-size:12px;color:var(--muted)}
+
+/* TABLE */
+.table-wrap{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;margin-bottom:1.5rem;
+  box-shadow:var(--shadow-sm);overflow-x:auto;
+}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+thead tr{background:var(--bg3)}
+th{
+  padding:11px 16px;text-align:right;
+  font-size:10px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.8px;white-space:nowrap;
+}
+td{padding:12px 16px;border-top:1px solid var(--border);color:var(--text)}
+tr:hover td{background:var(--blue-light)}
+.chip{
+  display:inline-block;padding:3px 9px;
+  border-radius:6px;font-size:11px;font-weight:600;
+}
+.chip-blue{background:var(--blue-light);color:var(--blue)}
+.chip-green{background:var(--green-light);color:var(--green)}
+.chip-purple{background:var(--purple-light);color:var(--purple)}
+
+/* CHART */
+.pie-grid{display:grid;grid-template-columns:200px 1fr;gap:2rem;align-items:center}
+.leg-list{display:flex;flex-direction:column;gap:8px}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text)}
+.leg-sq{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.leg-pct{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-right:auto}
+
+/* ALLOC */
+.alloc-row{margin-bottom:14px}
+.alloc-lbl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;color:var(--text)}
+.alloc-lbl span:last-child{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)}
+.bar-bg{background:var(--bg3);border-radius:6px;height:8px;overflow:hidden}
+.bar-fg{height:8px;border-radius:6px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* CASH */
+.cash-hero{
+  background:linear-gradient(135deg,var(--blue) 0%,#5B8FFF 100%);
+  border-radius:16px;padding:1.75rem 2rem;margin-bottom:1.5rem;
+  color:#fff;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:1rem;box-shadow:0 4px 20px rgba(59,111,232,0.3);
+}
+.cash-hero-title{font-size:12px;font-weight:600;opacity:0.8;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.cash-hero-val{font-size:2.2rem;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.cash-hero-sub{font-size:13px;opacity:0.75;margin-top:5px}
+.cash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem}
+.cash-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:1.25rem;box-shadow:var(--shadow-sm);
+  border-right:3px solid var(--blue);
+}
+.cash-card.ils{border-right-color:var(--green)}
+.cash-inst{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.cash-acc{font-size:11px;color:var(--muted);margin-bottom:12px}
+.cash-amt{font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--blue)}
+.cash-card.ils .cash-amt{color:var(--green)}
+.cash-fx{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* LOADING / ERROR */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;gap:1rem;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
+.error-box{background:var(--red-light);border:1px solid rgba(232,57,74,0.2);border-radius:12px;padding:1.5rem;color:var(--red);text-align:center}
+
+/* FOOTER */
+.footer{text-align:center;padding:1.5rem;font-size:11px;color:var(--muted);border-top:1px solid var(--border);background:var(--bg2)}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .header{padding:0 1rem}
+  .content{padding:1rem}
+  .tabs{padding:0 0.5rem}
+  .kpi-value{font-size:1.3rem}
+  .pie-grid{grid-template-columns:1fr}
+  .cash-hero-val{font-size:1.6rem}
+  .header-right .clock{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">תיק <em>Ofir</em></div>
+  <div class="header-right">
+    <span class="clock" id="clock"></span>
+    <span class="pill pill-green" id="statusPill"><span class="dot"></span><span id="statusTxt">טוען...</span></span>
+    <button class="btn-refresh" id="refreshBtn" onclick="loadData()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M1 4v6h6"/><path d="M23 20v-6h-6"/>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
+      </svg>
+      רענן
+    </button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="go('overview')">סקירה כללית</button>
+  <button class="tab" onclick="go('ibkr')">IBKR</button>
+  <button class="tab" onclick="go('fair')">FAIR</button>
+  <button class="tab" onclick="go('cash')">מזומן ובנקים</button>
+  <button class="tab" onclick="go('alloc')">הקצאה</button>
+</div>
+
+<div class="content active" id="tab-overview"><div class="loading"><div class="spinner"></div><span>טוען נתונים...</span></div></div>
+<div class="content" id="tab-ibkr"><div class="loading"><div class="spinner"></div></div></div>
+<div class="content" id="tab-fair"><div class="loading"><div class="spinner"></div></div></div>
+<div class="content" id="tab-cash"><div class="loading"><div class="spinner"></div></div></div>
+<div class="content" id="tab-alloc"><div class="loading"><div class="spinner"></div></div></div>
+
+<div class="footer" id="footer">מתחבר לנתונים...</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbyb9Gnpt-ouciqDpkZLbMjkCWqj2buF4O-KR7qcGGV9ZKef6vvB0kquNP3pnmxuqFod/exec';
+const C = ['#3B6FE8','#0CAF60','#F5A623','#7C5CFC','#E8394A','#00B8D9','#FB923C','#EC4899','#14B8A6','#6366F1'];
+let charts = {};
+
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('he-IL')},1000);
+
+const fmt  = n => Math.round(n).toLocaleString('he-IL');
+const fmtD = n => '$'+Math.round(n).toLocaleString('en-US');
+const pct  = n => (n*100).toFixed(1)+'%';
+const sgn  = n => n>=0?'+':'';
+const cls  = n => n>=0?'pos':'neg';
+const delt = (n,p) => `<span class="badge-delta ${n>=0?'up':'dn'}">${sgn(n)}₪${fmt(Math.abs(n))} (${sgn(p)}${pct(p)})</span>`;
+
+function go(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['overview','ibkr','fair','cash','alloc'][i]===id);
+  });
+  document.querySelectorAll('.content').forEach(c=>{
+    c.classList.toggle('active',c.id==='tab-'+id);
+  });
+}
+
+async function loadData(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  document.getElementById('statusTxt').textContent='טוען...';
+  document.getElementById('statusPill').className='pill pill-green';
+  try{
+    const res = await fetch(API);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d = await res.json();
+    if(d.error) throw new Error(d.error);
+    renderAll(d);
+    document.getElementById('statusTxt').textContent='עודכן '+d.meta.updatedAt;
+    document.getElementById('footer').textContent='עודכן: '+d.meta.updatedAt+' | USD/ILS: '+d.meta.usdIls.toFixed(4)+' | לחץ רענן לנתונים חדשים';
+  }catch(e){
+    document.getElementById('statusTxt').textContent='שגיאה';
+    document.getElementById('statusPill').className='pill pill-red';
+    document.querySelectorAll('[id^="tab-"]').forEach(el=>{
+      el.innerHTML=`<div class="error-box">שגיאה: ${e.message}<br><br>בדוק שה-Web App מפורסם עם גישה לכולם.</div>`;
+    });
+  }finally{
+    btn.classList.remove('spinning');
+  }
+}
+
+function renderAll(d){
+  renderOverview(d);
+  renderIBKR(d);
+  renderFAIR(d);
+  renderCash(d);
+  renderAlloc(d);
+}
+
+/* ── OVERVIEW ── */
+function renderOverview(d){
+  const s=d.summary, ib=d.ibkr, fa=d.fair, usd=d.meta.usdIls;
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-icon" style="background:var(--blue-light)">💰</div>
+      <div class="kpi-label">שווי כולל תיק</div>
+      <div class="kpi-value">₪${fmt(s.grandTotal)}</div>
+      ${delt(s.totalReturn,s.totalRetPct)}
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:#EEF3FD">🏦</div>
+      <div class="kpi-label">IBKR</div>
+      <div class="kpi-value">₪${fmt(s.ibkrVal)}</div>
+      <div class="kpi-sub">${fmtD(s.ibkrVal/usd)} | ${pct(s.ibkrVal/s.grandTotal)}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:var(--green-light)">🇮🇱</div>
+      <div class="kpi-label">FAIR</div>
+      <div class="kpi-value">₪${fmt(s.fairVal)}</div>
+      <div class="kpi-sub">${pct(s.fairVal/s.grandTotal)}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon" style="background:var(--purple-light)">🏛</div>
+      <div class="kpi-label">בנקים ומזומן</div>
+      <div class="kpi-value">₪${fmt(s.banksVal)}</div>
+      <div class="kpi-sub">${pct(s.banksVal/s.grandTotal)}</div>
+    </div>
+  </div>
+  <div class="sec">הרכב תיק</div>
+  <div class="card">
+    <div class="pie-grid">
+      <div style="position:relative;height:200px"><canvas id="pieC" role="img" aria-label="גרף עוגה הרכב תיק"></canvas></div>
+      <div class="leg-list" id="pieLeg"></div>
+    </div>
+  </div>
+  <div class="sec">תשואה לפי מקור</div>
+  <div class="card">
+    <div style="position:relative;height:180px"><canvas id="barC" role="img" aria-label="גרף תשואה"></canvas></div>
+  </div>`;
+  document.getElementById('tab-overview').innerHTML=h;
+
+  const pv=[ib.totalVal,ib.cash,fa.totalVal,fa.cash,s.banksVal];
+  const pl=['IBKR ניירות','IBKR מזומן','FAIR קרנות','FAIR מזומן','בנקים'];
+  const tot=pv.reduce((a,b)=>a+b,0);
+  const lg=document.getElementById('pieLeg');
+  pl.forEach((l,i)=>{
+    if(pv[i]<100)return;
+    lg.innerHTML+=`<div class="leg-row"><div class="leg-sq" style="background:${C[i]}"></div><span>${l}</span><span class="leg-pct">${pct(pv[i]/tot)}</span></div>`;
+  });
+  if(charts.pie)charts.pie.destroy();
+  charts.pie=new Chart(document.getElementById('pieC'),{
+    type:'doughnut',
+    data:{labels:pl,datasets:[{data:pv,backgroundColor:C,borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₪'+fmt(ctx.raw)+' ('+pct(ctx.raw/tot)+')'}}} }
+  });
+  const gc='#E4EAF4',tc='#6B7FA8';
+  if(charts.bar)charts.bar.destroy();
+  charts.bar=new Chart(document.getElementById('barC'),{
+    type:'bar',
+    data:{labels:['IBKR','FAIR'],
+      datasets:[
+        {label:'עלות מקורית',data:[ib.totalCost,fa.totalVal-fa.totalPL],backgroundColor:'rgba(59,111,232,0.2)',borderColor:'#3B6FE8',borderWidth:1.5},
+        {label:'שווי נוכחי',data:[ib.totalVal,fa.totalVal],backgroundColor:'rgba(12,175,96,0.2)',borderColor:'#0CAF60',borderWidth:1.5}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:12}}}},
+      scales:{x:{ticks:{color:tc},grid:{color:gc}},y:{ticks:{color:tc,callback:v=>'₪'+Math.round(v/1000)+'K'},grid:{color:gc}}}}
+  });
+}
+
+/* ── IBKR ── */
+function renderIBKR(d){
+  const ib=d.ibkr,usd=d.meta.usdIls;
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-icon" style="background:var(--blue-light)">📈</div>
+      <div class="kpi-label">שווי ניירות</div>
+      <div class="kpi-value">₪${fmt(ib.totalVal)}</div>
+      <div class="kpi-sub">${fmtD(ib.totalVal/usd)}</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--green-light)">💹</div>
+      <div class="kpi-label">תשואה כוללת</div>
+      <div class="kpi-value ${cls(ib.totalRet)}">${sgn(ib.totalRet)}₪${fmt(Math.abs(ib.totalRet))}</div>
+      ${delt(ib.totalRet,ib.totalRetPct)}
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--yellow-light)">💵</div>
+      <div class="kpi-label">מזומן IBKR</div>
+      <div class="kpi-value">₪${fmt(ib.cash)}</div>
+      <div class="kpi-sub">${fmtD(ib.cash/usd)}</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--purple-light)">🗂</div>
+      <div class="kpi-label">פוזיציות</div>
+      <div class="kpi-value">${ib.positions.length}</div>
+    </div>
+  </div>
+  <div class="sec">פוזיציות פתוחות</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>סימבול</th><th>סוג</th><th>כמות</th><th>קנייה $</th><th>שער קנייה</th><th>עלות ₪</th><th>נוכחי $</th><th>שווי ₪</th><th>תשואה</th></tr></thead>
+    <tbody>`;
+  ib.positions.forEach(p=>{
+    h+=`<tr>
+      <td><strong>${p.sym}</strong></td>
+      <td><span class="chip chip-blue">${p.type}</span></td>
+      <td class="mono">${p.qty}</td>
+      <td class="mono">$${p.buyP.toFixed(2)}</td>
+      <td class="mono">₪${(p.buyFX||0).toFixed(3)}</td>
+      <td class="mono">₪${fmt(p.costILS)}</td>
+      <td class="mono">$${p.curP.toFixed(2)}</td>
+      <td class="mono">₪${fmt(p.valILS)}</td>
+      <td class="mono ${cls(p.retILS)}">${sgn(p.retILS)}₪${fmt(Math.abs(p.retILS))} (${sgn(p.retPct)}${(p.retPct*100).toFixed(1)}%)</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  document.getElementById('tab-ibkr').innerHTML=h;
+}
+
+/* ── FAIR ── */
+function renderFAIR(d){
+  const fa=d.fair;
+  let h=`
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-icon" style="background:var(--green-light)">🏦</div>
+      <div class="kpi-label">שווי קרנות</div>
+      <div class="kpi-value">₪${fmt(fa.totalVal)}</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--blue-light)">📊</div>
+      <div class="kpi-label">רווח כולל</div>
+      <div class="kpi-value ${cls(fa.totalPL)}">${sgn(fa.totalPL)}₪${fmt(Math.abs(fa.totalPL))}</div>
+      ${delt(fa.totalPL,fa.totalPLPct)}
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--yellow-light)">💰</div>
+      <div class="kpi-label">מזומן FAIR</div>
+      <div class="kpi-value">₪${fmt(fa.cash)}</div>
+    </div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--purple-light)">📁</div>
+      <div class="kpi-label">מספר קרנות</div>
+      <div class="kpi-value">${fa.positions.length}</div>
+    </div>
+  </div>
+  <div class="sec">קרנות נאמנות</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>שם הקרן</th><th>סוג</th><th>כמות</th><th>שווי ₪</th><th>רווח/הפסד ₪</th><th>תשואה</th></tr></thead>
+    <tbody>`;
+  fa.positions.forEach(p=>{
+    h+=`<tr>
+      <td style="max-width:200px;white-space:normal">${p.name}</td>
+      <td><span class="chip chip-green">${p.type||'קרן נאמנות'}</span></td>
+      <td class="mono">${fmt(p.qty)}</td>
+      <td class="mono">₪${fmt(p.valILS)}</td>
+      <td class="mono ${cls(p.pl)}">${sgn(p.pl)}₪${fmt(Math.abs(p.pl))}</td>
+      <td class="mono ${cls(p.plPct)}">${sgn(p.plPct)}${(p.plPct*100).toFixed(1)}%</td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  document.getElementById('tab-fair').innerHTML=h;
+}
+
+/* ── CASH ── */
+function renderCash(d){
+  const c=d.cash,usd=d.meta.usdIls;
+  let h=`
+  <div class="cash-hero">
+    <div>
+      <div class="cash-hero-title">סה"כ מזומן ונזיל</div>
+      <div class="cash-hero-val">₪${fmt(c.total)}</div>
+      <div class="cash-hero-sub">${fmtD(c.total/usd)} לפי שער ${usd.toFixed(4)}</div>
+    </div>
+    <div style="text-align:left">
+      <div class="cash-hero-title">פירוט</div>
+      <div style="font-size:13px;opacity:0.85;line-height:1.8">
+        IBKR: ₪${fmt(c.ibkr)}<br>
+        FAIR: ₪${fmt(c.fair)}<br>
+        בנקים: ₪${fmt(c.banks)}
+      </div>
+    </div>
+  </div>
+  <div class="sec">פירוט מקורות</div>
+  <div class="cash-grid">`;
+
+  if(c.ibkr>0){
+    h+=`<div class="cash-card">
+      <div class="cash-inst">IBKR</div><div class="cash-acc">מזומן USD</div>
+      <div class="cash-amt">${fmtD(c.ibkr/usd)}</div>
+      <div class="cash-fx">× ${usd.toFixed(4)} = ₪${fmt(c.ibkr)}</div>
+    </div>`;
+  }
+  if(c.fair>0){
+    h+=`<div class="cash-card ils">
+      <div class="cash-inst">FAIR</div><div class="cash-acc">מזומן</div>
+      <div class="cash-amt">₪${fmt(c.fair)}</div>
+    </div>`;
+  }
+  const byI={};
+  d.banks.forEach(b=>{if(!byI[b.institution])byI[b.institution]=[];byI[b.institution].push(b)});
+  Object.keys(byI).forEach(inst=>{
+    byI[inst].forEach(b=>{
+      if(b.valueILS===0)return;
+      const isILS=b.ccy==='ILS';
+      h+=`<div class="cash-card ${isILS?'ils':''}">
+        <div class="cash-inst">${b.institution}</div>
+        <div class="cash-acc">${b.accType}</div>
+        <div class="cash-amt">${isILS?'₪'+fmt(b.balance):fmtD(b.balance)+' '+b.ccy}</div>
+        ${!isILS?`<div class="cash-fx">× ${b.rate.toFixed(4)} = ₪${fmt(b.valueILS)}</div>`:''}
+      </div>`;
+    });
+  });
+  h+=`</div>`;
+  document.getElementById('tab-cash').innerHTML=h;
+}
+
+/* ── ALLOC ── */
+function renderAlloc(d){
+  const s=d.summary,tot=s.grandTotal;
+  const items=[
+    {l:'ניירות IBKR',v:d.ibkr.totalVal,c:'#3B6FE8'},
+    {l:'קרנות FAIR', v:d.fair.totalVal,c:'#0CAF60'},
+    {l:'מזומן IBKR', v:d.ibkr.cash,   c:'#00B8D9'},
+    {l:'מזומן FAIR', v:d.fair.cash,    c:'#14B8A6'},
+    {l:'חשבונות בנק',v:s.banksVal,     c:'#7C5CFC'},
+  ];
+  let h=`
+  <div class="kpi-grid">
+    ${items.map(a=>`<div class="kpi">
+      <div class="kpi-label" style="font-size:10px">${a.l}</div>
+      <div class="kpi-value" style="font-size:1.4rem">${pct(a.v/tot)}</div>
+      <div class="kpi-sub">₪${fmt(a.v)}</div>
+    </div>`).join('')}
+  </div>
+  <div class="sec">הקצאה ויזואלית</div>
+  <div class="card">`;
+  items.forEach(a=>{
+    h+=`<div class="alloc-row">
+      <div class="alloc-lbl">
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="width:10px;height:10px;border-radius:3px;background:${a.c};display:inline-block"></span>${a.l}
+        </span>
+        <span>₪${fmt(a.v)} · ${pct(a.v/tot)}</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fg" style="width:${(a.v/tot*100).toFixed(1)}%;background:${a.c}"></div></div>
+    </div>`;
+  });
+  h+=`</div>
+  <div class="sec">גרף הקצאה</div>
+  <div class="card">
+    <div style="position:relative;height:220px">
+      <canvas id="allocC" role="img" aria-label="גרף הקצאת נכסים"></canvas>
+    </div>
+  </div>`;
+  document.getElementById('tab-alloc').innerHTML=h;
+  if(charts.alloc)charts.alloc.destroy();
+  charts.alloc=new Chart(document.getElementById('allocC'),{
+    type:'doughnut',
+    data:{labels:items.map(a=>a.l),datasets:[{data:items.map(a=>a.v),backgroundColor:items.map(a=>a.c),borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'left',labels:{color:'#6B7FA8',font:{size:12},boxWidth:12,padding:12}},
+        tooltip:{callbacks:{label:ctx=>' ₪'+fmt(ctx.raw)+' ('+pct(ctx.raw/tot)+')'}}} }
+  });
+}
+
+loadData();
+</script>
+</body>
+</html>
