@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline' https://script.google.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; default-src *">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>תיק השקעות | Ofir</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -270,47 +271,49 @@ function loadData(){
   document.getElementById('statusTxt').textContent='טוען...';
   document.getElementById('statusPill').className='pill pill-green';
 
-  // הסר סקריפט JSONP ישן אם קיים
-  const old = document.getElementById('jsonp-script');
-  if (old) old.remove();
+  // נקה JSONP ישן
+  const oldScript = document.getElementById('jsonp-script');
+  if (oldScript) oldScript.remove();
 
-  // timeout אם לא מגיע תשובה
+  // Timeout
   window._jsonpTimeout = setTimeout(()=>{
+    btn.classList.remove('spinning');
     document.getElementById('statusTxt').textContent='שגיאה — timeout';
     document.getElementById('statusPill').className='pill pill-red';
-    btn.classList.remove('spinning');
     document.querySelectorAll('[id^="tab-"]').forEach(el=>{
-      el.innerHTML='<div class="error-box">לא הצלחנו להתחבר ל-API. וודא שה-Web App מפורסם עם גישה לכולם.</div>';
+      el.innerHTML='<div class="error-box">לא ניתן להתחבר. נסה שוב.</div>';
     });
-  }, 20000);
+  }, 25000);
 
-  // JSONP callback
+  // JSONP — עובד ב-GitHub Pages
   window.portfolioData_cb = function(d){
     clearTimeout(window._jsonpTimeout);
     btn.classList.remove('spinning');
-    if (d.error) {
+    try {
+      if (d.error) throw new Error(d.error);
+      renderAll(d);
+      document.getElementById('statusTxt').textContent='עודכן '+d.meta.updatedAt;
+      document.getElementById('footer').textContent=
+        'עודכן: '+d.meta.updatedAt+' | USD/ILS: '+d.meta.usdIls.toFixed(4)+' | לחץ רענן לנתונים חדשים';
+    } catch(e) {
       document.getElementById('statusTxt').textContent='שגיאה';
       document.getElementById('statusPill').className='pill pill-red';
-      document.querySelectorAll('[id^="tab-"]').forEach(el=>{
-        el.innerHTML='<div class="error-box">שגיאה: '+d.error+'</div>';
-      });
-      return;
     }
-    renderAll(d);
-    document.getElementById('statusTxt').textContent='עודכן '+d.meta.updatedAt;
-    document.getElementById('footer').textContent='עודכן: '+d.meta.updatedAt+' | USD/ILS: '+d.meta.usdIls.toFixed(4)+' | לחץ רענן לנתונים חדשים';
   };
 
   const script = document.createElement('script');
   script.id = 'jsonp-script';
-  script.src = API + '?callback=portfolioData_cb&t=' + Date.now();
-  script.onerror = function(){
+  script.src = API + '?callback=portfolioData_cb&nocache=' + Date.now();
+  script.onerror = ()=>{
     clearTimeout(window._jsonpTimeout);
     btn.classList.remove('spinning');
-    document.getElementById('statusTxt').textContent='שגיאה';
+    document.getElementById('statusTxt').textContent='שגיאה בטעינה';
     document.getElementById('statusPill').className='pill pill-red';
+    document.querySelectorAll('[id^="tab-"]').forEach(el=>{
+      el.innerHTML='<div class="error-box">שגיאת CORS. נסה לפתוח את הדף ישירות ב-Apps Script:<br><a href="'+API+'" target="_blank" style="color:var(--blue)">פתח API</a></div>';
+    });
   };
-  document.head.appendChild(script);
+  document.body.appendChild(script);
 }
 
 function renderAll(d){
