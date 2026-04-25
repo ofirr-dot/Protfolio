@@ -264,28 +264,53 @@ function go(id){
   });
 }
 
-async function loadData(){
+function loadData(){
   const btn=document.getElementById('refreshBtn');
   btn.classList.add('spinning');
   document.getElementById('statusTxt').textContent='טוען...';
   document.getElementById('statusPill').className='pill pill-green';
-  try{
-    const res = await fetch(API);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const d = await res.json();
-    if(d.error) throw new Error(d.error);
+
+  // הסר סקריפט JSONP ישן אם קיים
+  const old = document.getElementById('jsonp-script');
+  if (old) old.remove();
+
+  // timeout אם לא מגיע תשובה
+  window._jsonpTimeout = setTimeout(()=>{
+    document.getElementById('statusTxt').textContent='שגיאה — timeout';
+    document.getElementById('statusPill').className='pill pill-red';
+    btn.classList.remove('spinning');
+    document.querySelectorAll('[id^="tab-"]').forEach(el=>{
+      el.innerHTML='<div class="error-box">לא הצלחנו להתחבר ל-API. וודא שה-Web App מפורסם עם גישה לכולם.</div>';
+    });
+  }, 20000);
+
+  // JSONP callback
+  window.portfolioData_cb = function(d){
+    clearTimeout(window._jsonpTimeout);
+    btn.classList.remove('spinning');
+    if (d.error) {
+      document.getElementById('statusTxt').textContent='שגיאה';
+      document.getElementById('statusPill').className='pill pill-red';
+      document.querySelectorAll('[id^="tab-"]').forEach(el=>{
+        el.innerHTML='<div class="error-box">שגיאה: '+d.error+'</div>';
+      });
+      return;
+    }
     renderAll(d);
     document.getElementById('statusTxt').textContent='עודכן '+d.meta.updatedAt;
     document.getElementById('footer').textContent='עודכן: '+d.meta.updatedAt+' | USD/ILS: '+d.meta.usdIls.toFixed(4)+' | לחץ רענן לנתונים חדשים';
-  }catch(e){
+  };
+
+  const script = document.createElement('script');
+  script.id = 'jsonp-script';
+  script.src = API + '?callback=portfolioData_cb&t=' + Date.now();
+  script.onerror = function(){
+    clearTimeout(window._jsonpTimeout);
+    btn.classList.remove('spinning');
     document.getElementById('statusTxt').textContent='שגיאה';
     document.getElementById('statusPill').className='pill pill-red';
-    document.querySelectorAll('[id^="tab-"]').forEach(el=>{
-      el.innerHTML=`<div class="error-box">שגיאה: ${e.message}<br><br>בדוק שה-Web App מפורסם עם גישה לכולם.</div>`;
-    });
-  }finally{
-    btn.classList.remove('spinning');
-  }
+  };
+  document.head.appendChild(script);
 }
 
 function renderAll(d){
